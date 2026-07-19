@@ -61,6 +61,14 @@ class AssessmentRequest(BaseModel):
     use_live_data: bool = True
     demo_scenario: bool = False
 
+    @field_validator("official_bridge_id", mode="before")
+    @classmethod
+    def normalize_optional_bridge_id(cls, value: object) -> object:
+        if isinstance(value, str):
+            normalized = value.strip()
+            return normalized or None
+        return value
+
     @field_validator("field_report")
     @classmethod
     def strip_report(cls, value: str) -> str:

@@ -1073,6 +1073,7 @@ form.addEventListener("submit", async (event) => {
   payload.emergency_access_route = fields.get("emergency_access_route") === "on";
   payload.use_live_data = fields.get("use_live_data") === "on";
   payload.demo_scenario = fields.get("demo_scenario") === "true";
+  if (!payload.official_bridge_id) delete payload.official_bridge_id;
   submitButton.disabled = true;
   submitButton.textContent = "Running agents...";
   emptyState.hidden = true;
