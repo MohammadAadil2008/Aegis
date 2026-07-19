@@ -1,0 +1,24 @@
+{
+  "scenario_id": "bridge-vulnerability-screening",
+  "title": "Bridge vulnerability screening",
+  "mode": "simulated_offline_demo",
+  "disclaimer": "This scenario illustrates elevated-risk decision support. It does not predict a bridge failure or provide an engineering certification.",
+  "assessment_request": {
+    "location": "Albany County, NY",
+    "asset_name": "Example Bridge",
+    "field_report": "Inspectors report cracking, visible scour, and debris accumulation near the bridge foundation after prolonged flooding.",
+    "forecast_rainfall_mm": 120,
+    "forecast_wind_kph": 45,
+    "river_rise_m": 2.0,
+    "condition_score": 20,
+    "asset_age_years": 72,
+    "observed_scour": true,
+    "emergency_access_route": false,
+    "use_live_data": false,
+    "demo_scenario": true
+  },
+  "expected_assessment": {
+    "risk_level": "HIGH",
+    "focus": "Prioritize a qualified inspection and prepare for authority-approved access restrictions if conditions worsen."
+  }
+}

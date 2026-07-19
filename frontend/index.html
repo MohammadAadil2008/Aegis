@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Aegis | Infrastructure Intelligence Platform</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">Aegis Operations</p>
+        <h1>Infrastructure Intelligence Platform</h1>
+      </div>
+      <div class="topbar-actions">
+        <button id="demo-button" class="secondary-button" type="button">Load flood-threat scenario</button>
+        <span class="status"><span></span> Human approval required</span>
+        <button id="theme-toggle" class="icon-button theme-toggle" type="button" aria-label="Switch to light mode" title="Switch to light mode"><span aria-hidden="true"></span></button>
+      </div>
+    </header>
+
+    <main>
+      <section id="operations-status" class="operations-status" aria-label="Operations status" aria-live="polite">
+        <article class="status-card is-ready"><span class="status-card-label">Data coverage</span><strong id="coverage-value">Awaiting assessment</strong><small id="coverage-detail">No source snapshot yet</small></article>
+        <article class="status-card is-ready"><span class="status-card-label">Agent workflow</span><strong id="agents-value">Ready</strong><small id="agents-detail">Awaiting operator inputs</small></article>
+        <article class="status-card is-ready"><span class="status-card-label">Assessment state</span><strong id="assessment-value">Standby</strong><small id="assessment-detail">No active incident assessment</small></article>
+        <article class="status-card is-review"><span class="status-card-label">Decision authority</span><strong id="review-value">Human review</strong><small id="review-detail">Required before operational action</small></article>
+      </section>
+      <section class="workspace" aria-label="Risk assessment workspace">
+        <form id="assessment-form" class="intake-panel">
+          <div class="section-heading">
+            <p class="eyebrow">New assessment</p>
+            <h2>Field inputs</h2>
+          </div>
+          <label>U.S. city, state, or ZIP code<input name="location" value="Albany, NY" required /></label>
+          <button id="find-bridges-button" class="secondary-button lookup-button" type="button">Find official bridges</button>
+          <p id="bridge-lookup-status" class="input-note" aria-live="polite">Search a location, then select an official bridge record.</p>
+          <section id="official-bridge-picker" class="official-bridge-picker" hidden aria-labelledby="official-bridge-title">
+            <h3 id="official-bridge-title">Official bridge record</h3>
+            <label>Select a nearby bridge<select id="official-bridge-select"><option value="">Choose an FHWA National Bridge Inventory record</option></select></label>
+            <div id="official-bridge-details" class="official-bridge-details" hidden></div>
+          </section>
+          <label>Bridge or asset name<input name="asset_name" value="" required /></label>
+          <label>Field report<textarea name="field_report" required>No field observations provided. Automated public-data assessment requested.</textarea></label>
+          <label class="check live-toggle"><input name="use_live_data" type="checkbox" checked /> Use live weather, gauge, bridge, and routing data</label>
+          <p id="scenario-status" class="input-note">Weather is retrieved live when available. River rise is a manual fallback because public discharge forecasts are not locally calibrated to bridge-risk thresholds.</p>
+          <div class="input-grid">
+            <label>Fallback rain (mm)<input name="forecast_rainfall_mm" type="number" min="0" max="1000" value="0" required /></label>
+            <label>Fallback wind (km/h)<input name="forecast_wind_kph" type="number" min="0" max="400" value="0" required /></label>
+            <label>Manual river rise (m)<input name="river_rise_m" type="number" min="0" max="30" step="0.1" value="0" required /></label>
+            <label>Condition score<input name="condition_score" type="number" min="0" max="100" required /></label>
+            <label>Asset age (years)<input name="asset_age_years" type="number" min="0" max="250" required /></label>
+          </div>
+          <label class="check"><input name="observed_scour" type="checkbox" /> Observed scour or erosion</label>
+          <label class="check"><input name="emergency_access_route" type="checkbox" /> Emergency access route available</label>
+          <input name="official_bridge_id" type="hidden" value="" />
+          <input name="demo_scenario" type="hidden" value="false" />
+          <button type="submit">Run risk assessment</button>
+        </form>
+
+        <section class="results-panel" aria-live="polite">
+          <div id="empty-state" class="empty-state">
+            <p class="eyebrow">Decision support</p>
+            <h2>Ready for assessment</h2>
+            <p>Submit verified field inputs to run the specialist workflow.</p>
+          </div>
+          <section id="workflow-progress" class="workflow-progress" hidden aria-labelledby="workflow-title">
+            <div class="workflow-heading"><div><p class="eyebrow">Agent workflow</p><h3 id="workflow-title">Assessment in progress</h3></div><span id="workflow-status" class="workflow-status">Starting</span></div>
+            <ol id="workflow-progress-list" class="workflow-progress-list"></ol>
+          </section>
+          <section id="loading-state" class="loading-state" hidden aria-label="Loading assessment">
+            <div class="skeleton-line skeleton-title"></div>
+            <div class="skeleton-line"></div>
+            <div class="skeleton-line skeleton-short"></div>
+            <div class="skeleton-grid"><span></span><span></span><span></span></div>
+          </section>
+          <div id="results" hidden>
+            <div class="risk-summary">
+              <div class="risk-heading"><p class="eyebrow">Composite risk</p><h2 id="risk-level">--</h2><span id="risk-confidence">--</span></div>
+              <div id="risk-gauge" class="risk-gauge" aria-label="Risk gauge"><strong id="risk-score">--</strong><span>Risk score</span><div id="risk-gauge-segments" class="risk-gauge-segments" aria-hidden="true"></div></div>
+            </div>
+            <section class="timeline-panel" aria-labelledby="timeline-title">
+              <div class="panel-heading"><div><p class="eyebrow">Assessment trace</p><h3 id="timeline-title">Agent timeline</h3></div><span id="timeline-summary">Awaiting workflow</span></div>
+              <ol id="assessment-timeline" class="assessment-timeline"></ol>
+            </section>
+            <section id="forecast-outlook" class="forecast-outlook" hidden aria-labelledby="forecast-title">
+              <div class="panel-heading"><div><p class="eyebrow">24-hour outlook</p><h3 id="forecast-title">Conditions timeline</h3></div><span>Observations and forecasts</span></div>
+              <ol id="forecast-timeline" class="forecast-timeline"></ol>
+            </section>
+            <section id="emergency-action-plan" class="emergency-action-plan" hidden aria-labelledby="action-plan-title">
+              <div class="panel-heading"><div><p class="eyebrow">Emergency action plan</p><h3 id="action-plan-title">Human-approved operational guidance</h3></div><span>Recommendations, not orders</span></div>
+              <div id="action-plan-grid" class="action-plan-grid"></div>
+              <div id="action-plan-limits" class="action-plan-limits" hidden></div>
+            </section>
+            <section id="emergency-feed" class="emergency-feed" hidden aria-labelledby="feed-title">
+              <div class="panel-heading"><div><p class="eyebrow">Live emergency feed</p><h3 id="feed-title">Verified public alerts</h3></div><span id="feed-refresh">Updating after assessment</span></div>
+              <div class="feed-grid">
+                <div><h4>Verified agency alerts</h4><div id="verified-alerts" class="feed-list"></div></div>
+                <div><h4>Aegis assessments</h4><div id="assessment-notices" class="assessment-notices"></div></div>
+              </div>
+              <div id="feed-warnings" class="feed-warnings" hidden></div>
+            </section>
+            <div class="report-action"><a id="report-download" class="report-download" href="#" hidden>Export incident report PDF</a></div>
+            <section id="risk-explanation" class="explanation-panel" hidden aria-labelledby="explanation-title">
+              <div class="explanation-heading"><div><p class="eyebrow">Explainable risk</p><h3 id="explanation-title">Why this risk level?</h3></div><span>Deterministic model</span></div>
+              <div id="score-breakdown" class="score-breakdown"></div>
+              <div class="explanation-grid">
+                <div><h4>Evidence increasing risk</h4><ul id="positive-evidence" class="cited-list"></ul></div>
+                <div><h4>Evidence reducing risk</h4><ul id="negative-evidence" class="cited-list"></ul></div>
+              </div>
+              <div class="confidence-detail"><h4>Confidence</h4><div id="confidence-rationale"></div></div>
+              <div id="missing-data" class="missing-data" hidden><h4>Missing data and limits</h4><ul id="missing-data-list"></ul></div>
+            </section>
+            <div id="live-evidence" class="live-evidence" hidden></div>
+            <section id="evidence-quality" class="evidence-quality" aria-labelledby="evidence-quality-title" hidden>
+              <div class="panel-heading"><div><p class="eyebrow">Evidence quality</p><h3 id="evidence-quality-title">Source reliability</h3></div><span>Provenance and availability</span></div>
+              <p class="evidence-quality-note">Ratings describe the source category's baseline provenance, not certainty about current conditions.</p>
+              <div id="evidence-quality-list" class="evidence-quality-list"></div>
+            </section>
+            <section id="incident-commander" class="commander-panel" hidden aria-labelledby="commander-title">
+              <div class="commander-heading">
+                <div><p class="eyebrow">AI Incident Commander</p><h3 id="commander-title">Evidence-backed operational brief</h3></div>
+                <span id="commander-status" class="commander-status"></span>
+              </div>
+              <p id="commander-summary" class="commander-summary"></p>
+              <div class="commander-grid">
+                <div><h4>Reasoning</h4><ul id="commander-reasoning" class="cited-list"></ul></div>
+                <div><h4>Immediate priorities</h4><ul id="commander-priorities" class="cited-list"></ul></div>
+                <div><h4>Recommended actions</h4><ul id="commander-actions" class="cited-list"></ul></div>
+                <div><h4>Long-term recommendations</h4><ul id="commander-long-term" class="cited-list"></ul></div>
+              </div>
+              <div id="commander-gaps" class="commander-gaps" hidden></div>
+            </section>
+            <div class="result-section"><h3>Why this result</h3><ul id="reasons" class="cited-list"></ul></div>
+            <div class="result-section"><h3>Recommended actions</h3><ul id="actions" class="cited-list"></ul></div>
+            <div class="result-section"><h3>Public alert draft</h3><p id="alert-draft" class="document"></p></div>
+            <div class="result-section"><h3>Situation report</h3><pre id="situation-report"></pre></div>
+          </div>
+        </section>
+      </section>
+
+      <section class="map-section" aria-label="Live infrastructure map">
+        <div class="section-heading map-heading">
+          <div><p class="eyebrow">Live operating picture</p><h2>Infrastructure and flood-risk map</h2></div>
+          <span id="map-status" class="map-status">Run an assessment to load map evidence</span>
+        </div>
+        <div id="map" role="region" aria-label="Interactive map showing the assessed asset, nearby bridges, flood-risk screening area, gauge, and suggested detour"></div>
+        <p id="map-detail" class="map-detail">Map layers are loaded from live public sources after an assessment.</p>
+      </section>
+
+      <section id="bridge-analysis-section" class="bridge-analysis-section" hidden aria-labelledby="bridge-analysis-title">
+        <div class="section-heading map-heading">
+          <div><p class="eyebrow">Bridge exposure inventory</p><h2 id="bridge-analysis-title">Nearby bridge analysis</h2></div>
+          <span id="bridge-analysis-summary" class="map-status"></span>
+        </div>
+        <p class="bridge-analysis-note">Risk for nearby bridges is flood-exposure screening only. Importance and traffic impact are facility-access proxies, not structural ratings or measured traffic volume.</p>
+        <div class="bridge-table-wrap">
+          <table class="bridge-table">
+            <thead><tr>
+              <th><button type="button" data-bridge-sort="name">Bridge</button></th>
+              <th><button type="button" data-bridge-sort="risk_level">Exposure risk</button></th>
+              <th><button type="button" data-bridge-sort="importance">Importance</button></th>
+              <th><button type="button" data-bridge-sort="distance_km">Distance</button></th>
+              <th><button type="button" data-bridge-sort="nearby_hospitals">Hospitals</button></th>
+              <th><button type="button" data-bridge-sort="nearby_schools">Schools</button></th>
+              <th><button type="button" data-bridge-sort="traffic_impact">Traffic impact</button></th>
+              <th><button type="button" data-bridge-sort="alternative_crossings">Alternatives</button></th>
+              <th scope="col">Details</th>
+            </tr></thead>
+            <tbody id="bridge-analysis-body"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="agent-section">
+        <div class="section-heading"><p class="eyebrow">Multi-agent workflow</p><h2>Specialist findings</h2></div>
+        <p class="agent-flow-intro">Six workflow specialists analyze shared evidence, then the coordinator produces an explainable assessment for qualified human review.</p>
+        <div id="agent-flow" class="agent-flow" role="img" aria-label="Aegis agent workflow: four evidence specialists feed the Coordinator Agent, then the Emergency Planning Agent, optional AI Incident Commander brief, and qualified human review."></div>
+        <div id="agent-grid" class="agent-grid"></div>
+      </section>
+    </main>
+    <dialog id="bridge-detail-dialog" class="bridge-detail-dialog" aria-labelledby="bridge-detail-title">
+      <div class="dialog-heading"><div><p class="eyebrow">Bridge detail</p><h3 id="bridge-detail-title">Bridge analysis</h3></div><button id="bridge-detail-close" class="secondary-button" type="button">Close</button></div>
+      <div id="bridge-detail-content"></div>
+    </dialog>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="/static/app.js"></script>
+  </body>
+</html>

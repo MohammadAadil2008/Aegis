@@ -1,0 +1,33 @@
+{
+  "scenario_id": "hurricane-flood-bridge",
+  "title": "Albany County flood-threat bridge assessment",
+  "mode": "simulated_offline_demo",
+  "disclaimer": "This is a fictional, deterministic hackathon demonstration. It is not live emergency information and does not authorize operational action.",
+  "assessment_request": {
+    "location": "Albany County, NY",
+    "asset_name": "Example Bridge",
+    "field_report": "Heavy rainfall is expected. Floodwater and debris are accumulating near the supports, and scour is visible at the foundation.",
+    "forecast_rainfall_mm": 165,
+    "forecast_wind_kph": 78,
+    "river_rise_m": 2.8,
+    "condition_score": 24,
+    "asset_age_years": 72,
+    "observed_scour": true,
+    "emergency_access_route": false,
+    "use_live_data": false,
+    "demo_scenario": true
+  },
+  "expected_assessment": {
+    "risk_level": "HIGH",
+    "reasons": [
+      "Flood forecast and river-rise inputs are increasing.",
+      "The simulated bridge has an aging, low-condition structure with observed scour.",
+      "Emergency access and alternative routes are not confirmed."
+    ],
+    "recommended_actions": [
+      "Request an urgent qualified engineer assessment.",
+      "Prepare traffic-control and alternate-route plans.",
+      "Stage emergency resources and monitor water levels."
+    ]
+  }
+}

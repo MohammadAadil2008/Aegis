@@ -1,0 +1,2 @@
+# Install the API and its runtime dependencies from the canonical package metadata.
+-e ./backend

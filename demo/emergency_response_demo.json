@@ -1,0 +1,19 @@
+{
+  "scenario_id": "emergency-response-demo",
+  "title": "Expected emergency decision-support output",
+  "mode": "simulated_offline_demo",
+  "input_scenario": "hurricane-flood-bridge",
+  "risk": "HIGH",
+  "reasons": [
+    "Flood forecast and river-rise inputs are increasing.",
+    "The simulated bridge has an aging, low-condition structure with observed scour.",
+    "Emergency access and alternative routes are not confirmed."
+  ],
+  "recommended_actions": [
+    "Increase qualified inspection frequency when conditions are safe.",
+    "Prepare authority-approved emergency communication and traffic-control plans.",
+    "Monitor water levels and refresh the assessment as conditions change."
+  ],
+  "human_review_required": true,
+  "disclaimer": "Aegis provides decision support only. Qualified emergency and engineering authorities retain all operational decision-making authority."
+}
