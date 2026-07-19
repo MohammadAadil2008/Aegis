@@ -88,6 +88,10 @@ Key endpoints:
 
 The public API has no authentication in this MVP. Do not expose it to operational users until identity, role-based authorization, shared rate limiting, and HTTPS controls are in place.
 
+## Deploy on Render
+
+The repository includes `render.yaml` for a free Render web-service deployment. It deploys the FastAPI dashboard without the optional Postgres/PostGIS audit database so the public demo can run with no provider keys. In Render, select **New > Blueprint**, choose this repository and its `main` branch, name the Blueprint `aegis-demo`, then deploy it. Add Groq or 511NY keys only through Render's encrypted environment-variable settings, never to Git.
+
 ## Screenshots
 
 Final submission screenshots are tracked in [docs/screenshots](docs/screenshots/README.md). They should show the simulated demo scenario so the displayed result is repeatable and clearly labeled as decision support, not an engineering certification.

@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: aegis
+    runtime: docker
+    plan: free
+    dockerfilePath: ./backend/Dockerfile
+    healthCheckPath: /api/health
+    envVars:
+      - key: ENABLE_GROQ_ENRICHMENT
+        value: "false"
+      - key: ENABLE_GROQ_INCIDENT_COMMANDER
+        value: "false"
