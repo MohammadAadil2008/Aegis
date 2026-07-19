@@ -94,7 +94,15 @@ The repository includes `render.yaml` for a free Render web-service deployment. 
 
 ## Screenshots
 
-Final submission screenshots are tracked in [docs/screenshots](docs/screenshots/README.md). They should show the simulated demo scenario so the displayed result is repeatable and clearly labeled as decision support, not an engineering certification.
+Final submission screenshots are tracked in [docs/screenshots](docs/screenshots/README.md). The dashboard captures use the repeatable simulated flood-threat scenario and are clearly labeled as decision support, not an engineering certification. The report capture is from a live Albany, NY verification that resolved an official FHWA NBI record.
+
+| Dashboard | Explainability | Workflow |
+| --- | --- | --- |
+| ![High-risk dashboard](docs/screenshots/dashboard-high-risk.png) | ![Assessment trace and 24-hour outlook](docs/screenshots/explainability.png) | ![Six-agent workflow](docs/screenshots/agent-workflow.png) |
+
+| Evidence quality | PDF incident report |
+| --- | --- |
+| ![Evidence and decision-support boundaries](docs/screenshots/evidence-quality.png) | ![Exported PDF incident report](docs/screenshots/incident-report.png) |
 
 ## Durable Audit Storage
 
@@ -124,7 +132,7 @@ During the Build Week submission period, Codex was used to:
 
 The current hardening focus is deliberate end-to-end testing with real cities, demo polish, consistent Aegis branding, and clear communication that Aegis supports qualified human decisions—it is not a certified engineering prediction system.
 
-Before submission, add the required Codex `/feedback` Session ID from the primary build thread here: `SESSION_ID_TO_BE_ADDED`.
+Codex `/feedback` Session ID from the primary build thread: `019f7556-2ac8-7ce3-b26c-eb8a6dcc3210`.
 
 ## Test
 
@@ -134,6 +142,8 @@ After Python is available, from `backend` run:
 python -m pip install -e ".[dev]"
 python -m pytest
 ```
+
+Latest local verification: 28 tests passed, including PDF-report generation. A live Albany, NY check also resolved FHWA NBI record `351511` and produced a valid PDF export.
 
 ## Next production milestones
 
