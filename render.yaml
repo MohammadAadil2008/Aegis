@@ -7,6 +7,6 @@ services:
     healthCheckPath: /api/health
     envVars:
       - key: ENABLE_GROQ_ENRICHMENT
-        value: "false"
+        value: "true"
       - key: ENABLE_GROQ_INCIDENT_COMMANDER
-        value: "false"
+        value: "true"
