@@ -185,9 +185,9 @@ class ReportGenerator:
 
     def public_alert(self, context: AgentContext, risk: RiskAssessment) -> str:
         return (
-            f"DRAFT - HUMAN APPROVAL REQUIRED: Elevated infrastructure risk has been identified near "
+            f"DRAFT - HUMAN APPROVAL REQUIRED: Infrastructure screening for "
             f"{context.request.asset_name} in {context.request.location}. Current assessment: "
-            f"{risk.risk_level}. Follow official local instructions and avoid restricted areas."
+            f"{risk.risk_level}. Qualified human review is required before any operational action."
         )
 
     def situation_report(self, context: AgentContext, risk: RiskAssessment) -> str:

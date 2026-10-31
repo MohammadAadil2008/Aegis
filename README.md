@@ -92,6 +92,21 @@ The public API has no authentication in this MVP. Do not expose it to operationa
 
 The repository includes `render.yaml` for a free Render web-service deployment. It deploys the FastAPI dashboard without the optional Postgres/PostGIS audit database so the public demo can run with no provider keys. In Render, select **New > Blueprint**, choose this repository and its `main` branch, name the Blueprint `aegis-demo`, then deploy it. Add Groq or 511NY keys only through Render's encrypted environment-variable settings, never to Git.
 
+For the existing Render service, set these in **Environment**, then choose **Save and deploy**:
+
+```text
+GROQ_API_KEY=<your private Groq key>
+GROQ_MODEL=openai/gpt-oss-20b
+ENABLE_GROQ_ENRICHMENT=true
+ENABLE_GROQ_INCIDENT_COMMANDER=true
+```
+
+The Blueprint keeps both feature flags enabled; generation still requires the private key and model. GPT-OSS uses strict structured output with low reasoning effort and a larger completion budget. Every response must finish before its JSON is accepted. The Commander also checks deterministic risk, confidence, and allowed source IDs. Known data gaps are preserved by the server. Source IDs identify provenance; they do not establish that every generated claim is true.
+
+Language synthesis excludes route polylines; the map and exported assessment retain them. Groq requests have bounded timeouts and no automatic SDK retries. If the provider cannot complete the request, deterministic output remains available. `incident_commander.warning_code` distinguishes incomplete output, invalid output, rate limits, access/configuration errors, timeouts, and provider availability. Logs record the category and exception type without keys, response bodies, or field reports. `narrative_enriched` is false when the model output is incomplete or invalid.
+
+The Groq key does not enable 511NY events or durable audit storage; those still need `NY511_API_KEY` and `DATABASE_URL` respectively. A working demonstration is not a validated structural prediction or dispatch system.
+
 ## Screenshots
 
 Final submission screenshots are tracked in [docs/screenshots](docs/screenshots/README.md). The dashboard captures use the repeatable simulated flood-threat scenario and are clearly labeled as decision support, not an engineering certification. The report capture is from a live Albany, NY verification that resolved an official FHWA NBI record.

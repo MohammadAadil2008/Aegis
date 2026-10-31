@@ -345,6 +345,7 @@ class IncidentCommanderBrief(BaseModel):
     long_term_recommendations: list[CitedStatement] = Field(default_factory=list)
     data_gaps: list[str] = Field(default_factory=list)
     warning: str | None = None
+    warning_code: str | None = None
 
 
 class LiveIntelligence(BaseModel):
