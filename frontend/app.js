@@ -955,7 +955,7 @@ function renderAssessment(data) {
   renderLoadingState(false);
   document.querySelector("#risk-level").textContent = data.risk.risk_level;
   document.querySelector("#risk-score").textContent = data.risk.score;
-  const enrichment = data.narrative_enriched ? "Groq writing enhancement active" : "deterministic writing fallback";
+  const enrichment = data.narrative_enriched ? "Groq-assisted drafting active" : "deterministic writing fallback";
   document.querySelector("#risk-confidence").textContent = `Model confidence: ${data.risk.confidence}% - ${enrichment} - human review required`;
   renderRiskGauge(data.risk);
   const labels = sourceLabels(data.live_intelligence);

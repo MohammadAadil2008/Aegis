@@ -188,3 +188,31 @@ def test_model_cannot_hide_evidence_or_change_statement_sources(monkeypatch, ass
     assert brief.reasoning[0].model_dump(mode="json") == expected[-1]
     assert {s.text for s in brief.reasoning} == {s["text"] for s in expected}
     assert any("does not establish absence of danger" in gap for gap in brief.data_gaps)
+
+
+def test_draft_prioritization_preserves_all_evidence_and_human_review(monkeypatch, assessment):
+    mock_completion(monkeypatch, {"reason_order": [len(assessment[1].risk.reasons)-1], "action_order": [1]})
+    risk = assessment[1].risk
+    drafts = GroqNarrativeService(settings()).enhance(
+        asset_name="Synthetic bridge", location="Albany, NY", risk=risk,
+        fallback_public_alert="DRAFT - HUMAN APPROVAL REQUIRED: Original alert", fallback_situation_report="Original report")
+    assert drafts.enriched
+    assert drafts.public_alert_draft == "DRAFT - HUMAN APPROVAL REQUIRED: Original alert"
+    for text in risk.reasons + risk.recommended_actions + risk.explanation.missing_data:
+        assert text in drafts.situation_report
+    assert "Missing observations do not establish absence of danger" in drafts.situation_report
+    assert "Human review required" in drafts.situation_report
+
+
+@pytest.mark.parametrize("payload", [
+    {"reason_order": [-1], "action_order": [0]},
+    {"reason_order": [999], "action_order": [0]},
+    {"reason_order": [0], "action_order": [0], "situation_report": "No immediate mitigation actions are required."},
+])
+def test_draft_cannot_add_safety_claims_or_reference_unavailable_evidence(monkeypatch, assessment, payload):
+    mock_completion(monkeypatch, payload)
+    drafts = GroqNarrativeService(settings()).enhance(
+        asset_name="Synthetic bridge", location="Albany, NY", risk=assessment[1].risk,
+        fallback_public_alert="Original alert", fallback_situation_report="Original report")
+    assert not drafts.enriched
+    assert drafts.situation_report == "Original report"

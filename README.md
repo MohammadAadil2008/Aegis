@@ -72,7 +72,7 @@ The Groq adapters are isolated in `backend/app/services/groq.py` and `backend/ap
 
 4. Open `http://localhost:8000`.
 
-To use the app without Groq, leave both Groq feature flags as `false`. The assessment workflow remains fully functional. When enabled, the dashboard shows whether an assessment used Groq writing enhancement, a Groq-assisted evidence brief, or a deterministic fallback.
+To use the app without Groq, leave both Groq feature flags as `false`. The assessment workflow remains fully functional. When enabled, the dashboard shows whether an assessment used Groq-assisted drafting, a Groq-assisted evidence brief, or a deterministic fallback.
 
 The emergency feed always includes National Weather Service weather and flood alerts when available. To enable official New York road and bridge events, add `NY511_API_KEY=your_511ny_developer_key` to `.env`. The key stays server-side and is never sent to the browser.
 
@@ -174,4 +174,4 @@ This project is released under the [MIT License](LICENSE).
 
 ### Evidence wording in the Commander brief
 
-Groq prioritizes statements supplied by the deterministic assessment. The server validates the exact factual wording, restores all evidence and known data gaps, and binds each statement to its original citations. The model cannot rewrite the screening summary or introduce a time-based safety forecast. Missing observations never establish absence of danger. Narrative writing enhancement remains a separate drafting feature requiring human review; screening scores are not validated failure probabilities.
+Groq prioritizes statements supplied by the deterministic assessment. The server validates the exact factual wording, restores all evidence and known data gaps, and binds each statement to its original citations. The model cannot rewrite the screening summary or introduce a time-based safety forecast. Missing observations never establish absence of danger. The separate draft-report path also limits Groq to prioritizing supplied evidence and actions by index. The server restores omitted items and renders all wording; public-alert wording remains deterministic. Both paths require human review, and screening scores are not validated failure probabilities.
