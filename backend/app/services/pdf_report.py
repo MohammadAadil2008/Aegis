@@ -366,7 +366,7 @@ class PdfIncidentReportGenerator:
                     assessment,
                 ),
             ]
-        availability = "Groq evidence synthesis" if commander.available else "Deterministic source-cited fallback"
+        availability = "Groq-assisted evidence brief" if commander.available else "Deterministic source-cited fallback"
         content: list[Flowable] = [
             Paragraph(f"<b>{escape(availability)}.</b> {escape(commander.executive_summary)}", self._styles["body"]),
             Paragraph("Immediate priorities", self._styles["label"]),
