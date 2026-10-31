@@ -56,12 +56,12 @@ def mock_completion(monkeypatch, payload, finish_reason="stop", error=None):
     return captured
 
 
-def commander_payload(result):
-    statement = {"text": "Qualified human review is required.", "source_ids": ["aegis-risk-model"]}
-    return dict(executive_summary="Synthetic screening assessment for human review.",
-                risk_level=result.risk.risk_level.value, confidence_score=result.risk.confidence,
-                reasoning=[statement], recommended_actions=[statement], immediate_priorities=[statement],
-                long_term_recommendations=[statement], data_gaps=[])
+def commander_payload(result, live=None):
+    service = GroqIncidentCommander
+    approved = service._approved_brief(result.risk, live, service._source_catalog(live))
+    return approved.model_dump(mode="json", include={
+        "executive_summary", "risk_level", "confidence_score", "reasoning",
+        "recommended_actions", "immediate_priorities", "long_term_recommendations", "data_gaps"})
 
 
 def generate(assessment, live=None):
@@ -71,9 +71,9 @@ def generate(assessment, live=None):
 
 
 def test_complete_structured_brief_preserves_risk_confidence_and_known_gaps(monkeypatch, assessment):
-    captured = mock_completion(monkeypatch, commander_payload(assessment[1]))
     live = LiveIntelligence(enabled=True, warnings=["No nearby gauge observation."], sources=[
         EvidenceSource(id="open-meteo-weather", label="Forecast", provider="Open-Meteo")])
+    captured = mock_completion(monkeypatch, commander_payload(assessment[1], live))
     brief = generate(assessment, live)
     assert brief.available is True
     assert brief.risk_level is assessment[1].risk.risk_level
@@ -158,3 +158,33 @@ def test_map_geometry_is_excluded_but_route_measurements_and_gaps_are_preserved(
     assert facts["live_intelligence"]["warnings"] == ["Gauge unavailable."]
     assert facts["allowed_sources"] == [s.model_dump(mode="json") for s in sources]
     assert len(json.dumps(facts)) < 12000
+
+
+@pytest.mark.parametrize("section,text", [
+    ("reasoning", "Zero weather points confirm no immediate hydrologic threat."),
+    ("executive_summary", "The bridge will remain LOW risk for the next 24 hours."),
+])
+def test_unsupported_claims_rejected_even_with_valid_citations(monkeypatch, assessment, section, text):
+    payload = commander_payload(assessment[1])
+    if section == "reasoning":
+        payload[section][0]["text"] = text
+    else:
+        payload[section] = text
+    mock_completion(monkeypatch, payload)
+    brief = generate(assessment)
+    assert not brief.available
+    assert brief.warning_code == "invalid_output"
+    assert text not in brief.model_dump_json()
+
+
+def test_model_cannot_hide_evidence_or_change_statement_sources(monkeypatch, assessment):
+    payload = commander_payload(assessment[1])
+    expected = payload["reasoning"]
+    payload["reasoning"] = [dict(expected[-1], source_ids=["operator-field-report"])]
+    payload["data_gaps"] = []
+    mock_completion(monkeypatch, payload)
+    brief = generate(assessment)
+    assert brief.available
+    assert brief.reasoning[0].model_dump(mode="json") == expected[-1]
+    assert {s.text for s in brief.reasoning} == {s["text"] for s in expected}
+    assert any("does not establish absence of danger" in gap for gap in brief.data_gaps)

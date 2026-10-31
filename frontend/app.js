@@ -712,7 +712,7 @@ function renderCommander(commander, live) {
   }
   const labels = sourceLabels(live);
   commanderPanel.hidden = false;
-  commanderStatus.textContent = commander.available ? "Groq evidence synthesis" : "Deterministic fallback";
+  commanderStatus.textContent = commander.available ? "Groq-assisted evidence brief" : "Deterministic fallback";
   commanderSummary.textContent = commander.executive_summary;
   citedList(document.querySelector("#commander-reasoning"), commander.reasoning || [], labels);
   citedList(document.querySelector("#commander-priorities"), commander.immediate_priorities || [], labels);
